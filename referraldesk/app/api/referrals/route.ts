@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { addReferral, listReferrals } from "@/lib/store";
 import { fireN8nWebhook, writeHubSpotContact, sendConfirmationSms } from "@/lib/integrations";
+import { buildConfig } from "@/config/build.config";
 
 export const dynamic = "force-dynamic";
 
@@ -16,23 +17,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const { buyerName, referrerName } = body;
-  if (!buyerName || !referrerName) {
-    return NextResponse.json(
-      { error: "Buyer name and referrer are both required." },
-      { status: 400 }
-    );
+  const { buyerName } = body;
+  if (!buyerName) {
+    return NextResponse.json({ error: "Buyer name is required." }, { status: 400 });
   }
+
+  // Resolve the operating referrer (if any) and the OWNING agent.
+  // Contact ownership always rolls up to an agent — the referrer owns nothing.
+  const referrer = body.referrerSlug
+    ? buildConfig.referrers.find((rf) => rf.slug === body.referrerSlug)
+    : undefined;
+
+  const ownerAgentId = referrer?.agentId
+    || body.ownerAgentId
+    || buildConfig.agents.find((a) => a.isRooftopAdmin)?.id
+    || buildConfig.agents[0].id;
+
+  const referrerName = referrer?.name || body.referrerName || "Direct";
 
   const record = addReferral({
     buyerName,
     buyerPhone: body.buyerPhone || "",
     vehicle: body.vehicle || "",
+    referrerId: referrer?.id,
     referrerName,
+    ownerAgentId,
   });
 
-  // Fire the automation chain. Each returns demo:true when no key is set,
-  // so the whole flow succeeds in demo mode and goes live with credentials.
   const [crm, sms, n8n] = await Promise.all([
     writeHubSpotContact(record),
     sendConfirmationSms(record),
@@ -45,7 +56,7 @@ export async function POST(req: Request) {
       crm,
       sms,
       n8n,
-      referrerCredited: { ok: true, demo: false, detail: `${referrerName} credited` },
+      referrerCredited: { ok: true, demo: false, detail: `${referrerName} operated · contact owned by ${ownerAgentId}` },
     },
   });
 }

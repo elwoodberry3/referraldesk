@@ -52,10 +52,36 @@ export function Ledger() {
   const owed = rows.filter((r) => r.payout === "Owed").length * d.payoutAmount;
   const paid = rows.filter((r) => r.payout === "Paid").length * d.payoutAmount;
 
+  // Rooftop roll-up — referrals driven by REFERRERS under Adam
+  const referrerRows = rows.filter((r) => r.referrerId);
+  const referrerTotal = referrerRows.filter((r) => r.payout !== "Pending").length * d.payoutAmount;
+
   return (
     <div>
+      {/* Rooftop strip — Adam sitting on top of his referrers */}
+      <div className="rounded-lg p-4 mb-4 flex items-center gap-4 flex-wrap" style={{ background: "var(--brand)", color: "#fff" }}>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide" style={{ opacity: 0.85 }}>Your referrer network</div>
+          <div className="text-sm" style={{ opacity: 0.95 }}>Leads coming up through people referring for you</div>
+        </div>
+        <div className="ml-auto flex gap-6">
+          <div>
+            <div className="text-2xl font-bold">{buildConfig.referrers.filter((rf) => rf.agentId === "AG-ADAM").length}</div>
+            <div className="text-xs" style={{ opacity: 0.85 }}>referrers</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold">{referrerRows.length}</div>
+            <div className="text-xs" style={{ opacity: 0.85 }}>referred leads</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold">${referrerTotal.toLocaleString()}</div>
+            <div className="text-xs" style={{ opacity: 0.85 }}>referrer payouts</div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex gap-3 flex-wrap mb-5">
-        <StatCard label="Referrals tracked" value={rows.length} />
+        <StatCard label="Contacts owned" value={rows.length} />
         <StatCard label="Owed to referrers" value={"$" + owed.toLocaleString()} tone="#B45309" />
         <StatCard label="Paid out" value={"$" + paid.toLocaleString()} tone="#047857" />
       </div>

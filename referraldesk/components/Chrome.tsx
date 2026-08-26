@@ -37,9 +37,10 @@ export function Header() {
 
 export function Tabs({ tab, setTab }: { tab: string; setTab: (t: string) => void }) {
   const tabs = [
-    { k: "ledger", label: "Payout Ledger" },
+    { k: "ledger", label: "Adam's Ledger" },
     { k: "intake", label: "Rep Intake" },
-    { k: "share", label: "Referral Link" },
+    { k: "share", label: "Sign-Up Funnel" },
+    { k: "agent", label: "Referrer Portal · John Doe" },
   ];
   return (
     <nav className="flex gap-1 px-3.5 bg-white" style={{ borderBottom: "1px solid #E5E7EB" }}>

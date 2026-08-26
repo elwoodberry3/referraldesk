@@ -20,7 +20,7 @@ export default function ReferralLanding({ params }: { params: { code: string } }
       await fetch("/api/referrals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...f, referrerName: referrer }),
+        body: JSON.stringify({ ...f, referrerSlug: params.code }),
       });
       setDone(true);
     } catch {

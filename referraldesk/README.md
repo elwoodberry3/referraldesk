@@ -1,6 +1,4 @@
-# ReferralDesk v.1.2.0 
-![ReferralDesk v.1.2.0 - IAS Build 020](./assets/images/diagram-0001.jpeg)  
-
+# ReferralDesk — IAS Build 020
 Dealership referral capture, attribution, and payout tracking. Replaces the "ask who referred you, write it on paper, mail the check" workflow with a system that credits the referrer at intake and tracks the payout to paid.
 
 **Sector:** Automotive Retail & Dealership Operations

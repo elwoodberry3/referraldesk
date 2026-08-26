@@ -2,39 +2,106 @@
 import React, { useState } from "react";
 import { buildConfig } from "@/config/build.config";
 
+/**
+ * Sign-Up Funnel — the clickable POC moment: John Doe joining Adam.
+ * A public referrer (creator/influencer/side-hustler) watches the VSL
+ * and signs up. Their email feeds ADAM's CRM — the contact is Adam's.
+ * On submit, the system "spins up" their referrer portal + link + QR.
+ */
 export function Share() {
   const d = buildConfig.dealership;
-  const [copied, setCopied] = useState(false);
-  const link = `https://${d.subdomainPreview}/r/${d.repSlug}`;
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const ready = name.trim() && email.trim();
+
+  const submit = async () => {
+    if (!ready || busy) return;
+    setBusy(true);
+    // Demo: the public sign-up writes the lead into Adam's CRM and
+    // provisions the referrer portal. Simulated unless keys are set.
+    try {
+      await fetch("/api/referrals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyerName: name,          // the signing-up referrer
+          buyerPhone: "",
+          vehicle: "Referrer sign-up",
+          ownerAgentId: "AG-ADAM",  // contact belongs to Adam
+          referrerName: "Sign-up funnel",
+        }),
+      });
+      setTimeout(() => { setDone(true); setBusy(false); }, 700);
+    } catch {
+      setDone(true); setBusy(false);
+    }
+  };
+
+  if (done) {
+    const slug = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return (
+      <div className="max-w-[520px]">
+        <div className="rounded-lg p-6 text-center bg-white" style={{ border: "1px solid #A7F3D0" }}>
+          <div className="text-3xl mb-2">✓</div>
+          <h2 className="text-ink text-xl font-bold m-0 mb-1">Your portal is spinning up</h2>
+          <p className="text-sm text-muted m-0 mb-4">
+            Welcome, {name.split(" ")[0]}. Here&apos;s what the system just provisioned for you:
+          </p>
+          <ul className="text-left text-sm text-body inline-block m-0" style={{ lineHeight: 1.9 }}>
+            <li>✓ Your referrer portal</li>
+            <li>✓ Your personal link — <code style={{ background: "#F3F4F6", padding: "1px 5px", borderRadius: 4 }}>/r/{slug}</code></li>
+            <li>✓ Your QR code</li>
+            <li>✓ Your welcome + nurture emails, queued</li>
+          </ul>
+          <div className="mt-4 text-xs text-muted" style={{ lineHeight: 1.6 }}>
+            Your info was added to {d.shortName}&apos;s system. Open the
+            <strong> Referrer Portal · John Doe</strong> tab to see what your portal looks like.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[520px]">
-      <h2 className="text-ink text-xl m-0 mb-1 font-bold">Your referral link</h2>
+      <h2 className="text-ink text-xl m-0 mb-1 font-bold">Earn ${d.payoutAmount} per referral</h2>
       <p className="text-sm text-muted m-0 mb-5">
-        Give this to happy customers. Anyone they send lands credited to you — no scratch paper.
+        The public sign-up funnel. A creator or side-hustler lands here, watches the pitch,
+        and joins — and the system spins up their whole referral kit automatically.
       </p>
-      <div className="bg-white rounded-lg p-6 text-center" style={{ border: "1px solid #E5E7EB" }}>
-        <div className="mx-auto mb-4.5 rounded-lg grid p-3.5 gap-[3px]"
-          style={{ width: 150, height: 150, background: "#111827", gridTemplateColumns: "repeat(7,1fr)", gridTemplateRows: "repeat(7,1fr)", marginBottom: 18 }}>
-          {Array.from({ length: 49 }).map((_, i) => (
-            <div key={i} style={{ background: (i * 7 + ((i * 13) % 5)) % 3 === 0 ? "#fff" : "transparent", borderRadius: 1 }} />
-          ))}
-        </div>
-        <div className="text-sm text-muted mb-1.5">
-          Referred by <strong className="text-ink">{d.repName}</strong> · {d.shortName}
-        </div>
-        <div className="flex gap-2 items-center rounded-lg px-2.5 py-2" style={{ background: "#F9FAFB", border: "1px solid #E5E7EB" }}>
-          <span className="flex-1 text-sm text-body overflow-hidden text-ellipsis whitespace-nowrap text-left">{link}</span>
-          <button onClick={() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-            className="border-none rounded-md px-3.5 py-1.5 text-sm font-semibold cursor-pointer text-white"
-            style={{ background: "var(--brand)" }}>
-            {copied ? "Copied" : "Copy"}
-          </button>
+
+      {/* VSL placeholder */}
+      <div className="rounded-lg mb-5 flex items-center justify-center" style={{ background: "#111827", aspectRatio: "16/9" }}>
+        <div className="text-center" style={{ color: "#9CA3AF" }}>
+          <div style={{ fontSize: 34 }}>▶</div>
+          <div className="text-xs mt-1">VSL — your pitch to referrers</div>
+          <div className="text-[10px] mt-0.5" style={{ opacity: 0.6 }}>(demo placeholder)</div>
         </div>
       </div>
-      <p className="text-sm text-body mt-4 text-center">
-        When someone opens this link and books, they show up on your ledger already tagged to you.
-      </p>
+
+      <div className="bg-white rounded-lg p-5" style={{ border: "1px solid #E5E7EB" }}>
+        <label className="block mb-3.5">
+          <span className="block text-sm font-semibold text-body mb-1.5">Your name</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. John Doe"
+            className="w-full px-3 py-2.5 text-sm rounded-lg outline-none text-ink" style={{ border: "1px solid #E5E7EB" }} />
+        </label>
+        <label className="block mb-3.5">
+          <span className="block text-sm font-semibold text-body mb-1.5">Email</span>
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" type="email"
+            className="w-full px-3 py-2.5 text-sm rounded-lg outline-none text-ink" style={{ border: "1px solid #E5E7EB" }} />
+        </label>
+        <button disabled={!ready || busy} onClick={submit}
+          className="w-full py-3 text-[15px] font-bold rounded-lg border-none"
+          style={{ cursor: ready && !busy ? "pointer" : "not-allowed", background: ready ? "var(--brand)" : "#E5E7EB", color: ready ? "#fff" : "#6B7280" }}>
+          {busy ? "Spinning up your portal…" : "Sign up & get my link"}
+        </button>
+        <p className="text-[11px] text-muted mt-2.5 mb-0" style={{ lineHeight: 1.5 }}>
+          By signing up your details are added to {d.shortName}&apos;s system. Payouts are funded
+          by completed vehicle sales — there&apos;s no cost to join and no payment for signing up.
+        </p>
+      </div>
     </div>
   );
 }

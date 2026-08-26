@@ -4,6 +4,7 @@ import { BrowserBar, Header, Tabs } from "@/components/Chrome";
 import { Ledger } from "@/components/Ledger";
 import { Intake } from "@/components/Intake";
 import { Share } from "@/components/Share";
+import { ReferrerPortal } from "@/components/ReferrerPortal";
 import { TodoChips } from "@/components/ui";
 
 export default function Page() {
@@ -17,6 +18,7 @@ export default function Page() {
         {tab === "ledger" && <Ledger />}
         {tab === "intake" && <Intake onLogged={() => setTab("ledger")} />}
         {tab === "share" && <Share />}
+        {tab === "agent" && <ReferrerPortal />}
         <TodoChips />
       </main>
     </div>
