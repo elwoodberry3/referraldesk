@@ -1,5 +1,8 @@
 # ReferralDesk — IAS Build 020
-Dealership referral capture, attribution, and payout tracking. Replaces the "ask who referred you, write it on paper, mail the check" workflow with a system that credits the referrer at intake and tracks the payout to paid.
+
+Dealership referral capture, attribution, and payout tracking. Replaces the
+"ask who referred you, write it on paper, mail the check" workflow with a
+system that credits the referrer at intake and tracks the payout to paid.
 
 **Sector:** Automotive Retail & Dealership Operations
 **Stack:** Next.js 14 (App Router) · Vercel · Tailwind · n8n Cloud · HubSpot · SMS
@@ -18,7 +21,9 @@ Plus a public **`/r/[code]`** landing page — the link a referred buyer actuall
 
 ## Demo mode vs. live
 
-The app runs fully clickable with **zero credentials** — integrations are simulated and labeled as such in the UI. Set an env var and that integration goes live. See `.env.example`.
+The app runs fully clickable with **zero credentials** — integrations are
+simulated and labeled as such in the UI. Set an env var and that integration
+goes live. See `.env.example`.
 
 | Env var | Turns on |
 |---|---|
@@ -28,7 +33,8 @@ The app runs fully clickable with **zero credentials** — integrations are simu
 
 ## Install for a new dealership
 
-Change **one block** — `dealership` in `config/build.config.ts`: name, short name, subdomain, brand color, rep, payout amount. Nothing else.
+Change **one block** — `dealership` in `config/build.config.ts`:
+name, short name, subdomain, brand color, rep, payout amount. Nothing else.
 
 ## Deploy to Vercel
 

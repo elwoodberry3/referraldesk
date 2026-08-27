@@ -12,16 +12,16 @@ function StatCard({ label, value, tone }: { label: string; value: string | numbe
   );
 }
 
-export function Ledger() {
+export function Ledger({ activeAgentId }: { activeAgentId: string }) {
   const d = buildConfig.dealership;
-  const [rows, setRows] = useState<Referral[]>(buildConfig.seed);
+  const [allRows, setAllRows] = useState<Referral[]>(buildConfig.seed);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/referrals", { cache: "no-store" });
       const data = await res.json();
-      setRows(data.referrals);
+      setAllRows(data.referrals);
     } catch {
       /* keep seed on failure — demo stays alive */
     } finally {
@@ -31,9 +31,16 @@ export function Ledger() {
 
   useEffect(() => { load(); }, [load]);
 
+  // VISIBILITY RULE (the wall): the rooftop admin sees every contact.
+  // A normal agent sees ONLY the contacts they own. This is the same
+  // logic as lib/store.ts referralsVisibleTo — enforced in the view too.
+  const activeAgent = buildConfig.agents.find((a) => a.id === activeAgentId);
+  const isAdmin = !!activeAgent?.isRooftopAdmin;
+  const rows = isAdmin ? allRows : allRows.filter((r) => r.ownerAgentId === activeAgentId);
+
   const advance = async (id: string) => {
     // optimistic
-    setRows((rs) => rs.map((r) => {
+    setAllRows((rs) => rs.map((r) => {
       if (r.id !== id) return r;
       if (r.status === "New") return { ...r, status: "Showed" };
       if (r.status === "Showed") return { ...r, status: "Sold", payout: "Owed" };
@@ -52,21 +59,28 @@ export function Ledger() {
   const owed = rows.filter((r) => r.payout === "Owed").length * d.payoutAmount;
   const paid = rows.filter((r) => r.payout === "Paid").length * d.payoutAmount;
 
-  // Rooftop roll-up — referrals driven by REFERRERS under Adam
+  // Roll-up strip — referrer-driven leads within what's visible
   const referrerRows = rows.filter((r) => r.referrerId);
   const referrerTotal = referrerRows.filter((r) => r.payout !== "Pending").length * d.payoutAmount;
+  const visibleReferrerCount = new Set(referrerRows.map((r) => r.referrerId)).size;
 
   return (
     <div>
-      {/* Rooftop strip — Adam sitting on top of his referrers */}
+      {/* Roll-up strip — adapts to who is viewing (the wall, felt in the numbers) */}
       <div className="rounded-lg p-4 mb-4 flex items-center gap-4 flex-wrap" style={{ background: "var(--brand)", color: "#fff" }}>
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide" style={{ opacity: 0.85 }}>Your referrer network</div>
-          <div className="text-sm" style={{ opacity: 0.95 }}>Leads coming up through people referring for you</div>
+          <div className="text-xs font-semibold uppercase tracking-wide" style={{ opacity: 0.85 }}>
+            {isAdmin ? "Rooftop view — all agents" : `${activeAgent?.name}'s book only`}
+          </div>
+          <div className="text-sm" style={{ opacity: 0.95 }}>
+            {isAdmin
+              ? "You see every agent's contacts across the store"
+              : "You see only the contacts you own — no other agent's"}
+          </div>
         </div>
         <div className="ml-auto flex gap-6">
           <div>
-            <div className="text-2xl font-bold">{buildConfig.referrers.filter((rf) => rf.agentId === "AG-ADAM").length}</div>
+            <div className="text-2xl font-bold">{visibleReferrerCount}</div>
             <div className="text-xs" style={{ opacity: 0.85 }}>referrers</div>
           </div>
           <div>

@@ -18,10 +18,24 @@ export function BrowserBar() {
   );
 }
 
-export function Header() {
+export function Header({
+  activeAgentId,
+  setActiveAgentId,
+}: {
+  activeAgentId: string;
+  setActiveAgentId: (id: string) => void;
+}) {
   const d = buildConfig.dealership;
+
+  // The logged-in user is the rooftop admin (Adam). Only the admin
+  // gets the "view as" control — a normal agent would never see it.
+  const admin = buildConfig.agents.find((a) => a.isRooftopAdmin);
+  const isAdmin = !!admin;
+  const activeAgent = buildConfig.agents.find((a) => a.id === activeAgentId);
+  const viewingSelf = activeAgentId === admin?.id;
+
   return (
-    <header className="flex items-center justify-between px-5 py-4 bg-white" style={{ borderBottom: "1px solid #E5E7EB" }}>
+    <header className="flex items-center justify-between px-5 py-4 bg-white flex-wrap gap-3" style={{ borderBottom: "1px solid #E5E7EB" }}>
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-base"
           style={{ background: "var(--brand)" }}>R</div>
@@ -30,7 +44,34 @@ export function Header() {
           <div className="text-xs text-muted">{d.name}</div>
         </div>
       </div>
-      <div className="text-sm text-muted">Signed in — {d.repName}</div>
+
+      {isAdmin ? (
+        <div className="flex items-center gap-2">
+          {!viewingSelf && (
+            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded"
+              style={{ background: "#FFFBEB", color: "#B45309", border: "1px solid #FDE68A" }}>
+              Viewing as agent
+            </span>
+          )}
+          <label className="text-sm text-muted flex items-center gap-1.5">
+            View as:
+            <select
+              value={activeAgentId}
+              onChange={(e) => setActiveAgentId(e.target.value)}
+              className="text-sm font-semibold text-ink rounded-md px-2 py-1 cursor-pointer bg-white"
+              style={{ border: "1px solid #E5E7EB" }}
+            >
+              {buildConfig.agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}{a.isRooftopAdmin ? " (you · admin)" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ) : (
+        <div className="text-sm text-muted">Signed in — {activeAgent?.name}</div>
+      )}
     </header>
   );
 }
